@@ -15,7 +15,7 @@ services:
     container_name: strapi-dev
     user: root
     working_dir: /app
-    command: sh -c "npx strapi development"
+    command: sh -c "npx strapi develop"
     env_file:
       - .env
     environment:
