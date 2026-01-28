@@ -9,18 +9,20 @@ services:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
 
   strapi:
     image: node:20-alpine
     container_name: strapi-dev
     working_dir: /app
-    command: sh -c "npm install && npm run develop"
+    command: npm run develop
     env_file:
       - .env
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: "--max-old-space-size=256"
     volumes:
       - ./:/app
+      - node_modules:/app/node_modules
     ports:
       - "80:1337"
     depends_on:
@@ -28,3 +30,4 @@ services:
 
 volumes:
   postgres_data:
+  node_modules:
