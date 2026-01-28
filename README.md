@@ -1,61 +1,152 @@
-# 🚀 Getting started with Strapi
+# Football Shirt Marketplace - Strapi Backend
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+Dự án backend cho marketplace áo bóng đá sử dụng Strapi và PostgreSQL với Docker.
 
-### `develop`
+## Cấu trúc Docker
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+Dự án bao gồm các container sau:
+- **Strapi**: Backend CMS
+- **PostgreSQL**: Database
+- **pgAdmin**: Quản lý database (tùy chọn)
+- **Nginx**: Reverse proxy cho production (tùy chọn)
 
-```
-npm run develop
-# or
-yarn develop
-```
+## Cài đặt và chạy
 
-### `start`
+### Development Environment
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
-
-```
-npm run start
-# or
-yarn start
+1. Clone repository và di chuyển vào thư mục:
+```bash
+cd football-shirt-marketplace-strapi
 ```
 
-### `build`
-
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
-
-```
-npm run build
-# or
-yarn build
+2. Tạo Strapi project (nếu chưa có):
+```bash
+npx create-strapi-app@latest . --quickstart --no-run
 ```
 
-## ⚙️ Deployment
+3. Chỉnh sửa file `.env` với thông tin cấu hình phù hợp
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
-
+4. Chạy development environment:
+```bash
+docker-compose up -d
 ```
-yarn strapi deploy
+
+5. Truy cập ứng dụng:
+- Strapi Admin: http://localhost:1337/admin
+- pgAdmin (nếu sử dụng): http://localhost:5050
+
+### Production Environment
+
+1. Chỉnh sửa secrets trong file `.env` cho production
+
+2. Build và chạy production:
+```bash
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
-## 📚 Learn more
+3. Với Nginx reverse proxy:
+```bash
+docker-compose -f docker-compose.prod.yml --profile nginx up -d
+```
 
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
+## Các lệnh hữu ích
 
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
+### Development
+```bash
+# Chạy containers
+docker-compose up -d
 
-## ✨ Community
+# Xem logs
+docker-compose logs -f strapi
 
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
+# Dừng containers
+docker-compose down
 
----
+# Xóa volumes (sẽ mất dữ liệu database)
+docker-compose down -v
+```
 
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+### Production
+```bash
+# Build và chạy production
+docker-compose -f docker-compose.prod.yml up -d --build
+
+# Xem logs production
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Dừng production
+docker-compose -f docker-compose.prod.yml down
+```
+
+### Database Operations
+```bash
+# Backup database
+docker-compose exec postgres pg_dump -U strapi strapi > backup.sql
+
+# Restore database
+docker-compose exec -T postgres psql -U strapi strapi < backup.sql
+
+# Truy cập PostgreSQL shell
+docker-compose exec postgres psql -U strapi -d strapi
+```
+
+## Cấu hình Environment Variables
+
+### Quan trọng: Thay đổi các giá trị sau cho production!
+- `JWT_SECRET`
+- `ADMIN_JWT_SECRET`
+- `APP_KEYS`
+- `API_TOKEN_SALT`
+- `TRANSFER_TOKEN_SALT`
+- `POSTGRES_PASSWORD`
+
+### Database Configuration
+- `DATABASE_HOST`: postgres (tên container)
+- `DATABASE_PORT`: 5432
+- `DATABASE_NAME`: strapi
+- `DATABASE_USERNAME`: strapi
+- `DATABASE_PASSWORD`: strapi_password
+
+## Ports
+
+- **Strapi**: 1337
+- **PostgreSQL**: 5432
+- **pgAdmin**: 5050
+- **Nginx**: 80, 443
+
+## Volumes
+
+- `postgres_data`: Lưu trữ dữ liệu PostgreSQL
+- `.:/app`: Mount source code vào container Strapi (development)
+
+## Networks
+
+- `strapi-network`: Internal network cho các containers
+
+## Security Notes
+
+1. Thay đổi tất cả default passwords và secrets
+2. Sử dụng HTTPS trong production
+3. Giới hạn access từ bên ngoài
+4. Backup database thường xuyên
+5. Update images thường xuyên
+
+## Troubleshooting
+
+### Container không start được
+```bash
+docker-compose logs <service-name>
+```
+
+### Database connection issues
+- Kiểm tra container postgres đã chạy chưa
+- Kiểm tra environment variables
+- Kiểm tra network connectivity
+
+### Port conflicts
+- Thay đổi ports trong docker-compose.yml nếu bị conflict
+
+### Performance issues
+- Tăng resources cho Docker
+- Monitor container logs
+- Optimize database queries
