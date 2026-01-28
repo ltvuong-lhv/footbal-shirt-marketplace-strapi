@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: strapi-postgres
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  strapi:
+    build: ./strapi
+    container_name: strapi-app
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    depends_on:
+      - postgres
+    expose:
+      - "1337"
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: strapi-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - strapi
+
+volumes:
+  postgres_data:
