@@ -11,7 +11,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   strapi:
-    build: ./strapi
+    build: .
     container_name: strapi-app
     restart: unless-stopped
     env_file:
