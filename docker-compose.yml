@@ -15,9 +15,12 @@ services:
     container_name: strapi-dev
     user: root
     working_dir: /app
-    command: sh -c "npx strapi develop --no-build"
+    command: sh -c "npx strapi development"
     env_file:
       - .env
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: "--max-old-space-size=256"
     volumes:
       - ./:/app
     ports:
